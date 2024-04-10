@@ -28,40 +28,49 @@ var (
 	msgChannel = make(chan Message)
 )
 
+// handleWsConnection upgrades HTTP connections to WebSocket and handles incoming messages.
 func handlWsConnection(w http.ResponseWriter, req *http.Request) {
-	// Update http connection to websocket
+	// Upgrade the HTTP connection to a WebSocket connection
 	conn, err := upgrader.Upgrade(w, req, nil)
 
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 
+	// Register the new connection
 	clients[conn] = true
 
 	for {
-		// handle message
+		// Read messages from the connection
 		var msg Message
 		err := conn.ReadJSON(&msg)
 		if err != nil {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			conn.Close()
+			delete(clients, conn)
 			break
 		}
 
+		// Set the sender and send the message to the message channel
 		msg.Sender = conn
 
 		msgChannel <- msg
 	}
 }
 
+// handleMessage listens on the msgChannel and broadcasts messages to all connected clients.
 func handleMessage() {
 	// go routine to handle incoming message
 	for {
 		msg := <-msgChannel
 
-		// broadcast message to all users
+		// Broadcast the message to all clients
 		for client := range clients {
+			// Handle errors that occur while writing messages
 			if err := client.WriteJSON(msg); err != nil {
 				fmt.Printf("error: %v", err)
+				client.Close()
+				delete(clients, client)
 			}
 		}
 	}
