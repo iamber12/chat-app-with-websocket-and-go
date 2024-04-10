@@ -14,6 +14,7 @@ type Message struct {
 }
 
 var (
+	// HTTP connection upgrader
 	upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -28,6 +29,7 @@ var (
 )
 
 func handlWsConnection(w http.ResponseWriter, req *http.Request) {
+	// Update http connection to websocket
 	conn, err := upgrader.Upgrade(w, req, nil)
 
 	if err != nil {
@@ -37,6 +39,7 @@ func handlWsConnection(w http.ResponseWriter, req *http.Request) {
 	clients[conn] = true
 
 	for {
+		// handle message
 		var msg Message
 		err := conn.ReadJSON(&msg)
 		if err != nil {
@@ -51,9 +54,11 @@ func handlWsConnection(w http.ResponseWriter, req *http.Request) {
 }
 
 func handleMessage() {
+	// go routine to handle incoming message
 	for {
 		msg := <-msgChannel
 
+		// broadcast message to all users
 		for client := range clients {
 			if err := client.WriteJSON(msg); err != nil {
 				fmt.Printf("error: %v", err)
