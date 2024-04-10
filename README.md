@@ -19,5 +19,5 @@ To get started with the Go Chat App, follow these steps:
 git clone https://github.com/<your-username>/go-chat-app.git
 cd go-chat-app
 
-2. **Run the server**
+2. **Run the server:**
 go run main.go
