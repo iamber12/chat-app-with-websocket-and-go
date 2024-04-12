@@ -16,8 +16,8 @@ To get started with the Go Chat App, follow these steps:
 1. **Clone the repository:**
 
 ```bash
-git clone https://github.com/<your-username>/go-chat-app.git
-cd go-chat-app
+git clone https://github.com/iamber12/chat-app-with-websocket-and-go
+cd chat-app-with-websocket-and-go
 ```
 
 2. **Run the server:**
